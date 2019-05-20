@@ -14,6 +14,7 @@
 
 // common
 #define strlen_addr                     0x3B71A0
+#define strstr_addr                     0x17DFB0
 #define malloc_addr                     0x10E250
 #define free_addr                       0x10E460
 #define memcpy_addr                     0x1EA530
@@ -30,6 +31,7 @@
 #define sceSblAuthMgrGetSelfInfo_addr   0x63CD40
 #define sceSblAuthMgrIsLoadable2_addr   0x63C4F0
 #define sceSblAuthMgrVerifyHeader_addr  0x642B40
+#define sceSblACMgrGetPathId_addr        0x117E0
 
 // Fpkg
 #define sceSblPfsKeymgrGenKeys_addr     0x62D480
@@ -57,6 +59,7 @@
 #define sceSblAuthMgrVerifyHeader_hook2                           0x63F718
 #define sceSblAuthMgrSmLoadSelfSegment__sceSblServiceMailbox_hook 0x64318B
 #define sceSblAuthMgrSmLoadSelfBlock__sceSblServiceMailbox_hook   0x643DA2
+#define sceSblAuthMgrIsLoadable__sceSblACMgrGetPathId__hook       0x63E25D
 
 // Fpkg hooks
 #define sceSblKeymgrSmCallfunc_npdrm_decrypt_isolated_rif_hook    0x64C720
@@ -78,6 +81,8 @@
 #define nidf_libSceDipsw_patch2                     0x23747B
 #define nidf_libSceDipsw_patch3                     0x799837
 #define nidf_libSceDipsw_patch4                     0x947187
+
+#define SHELLCORE_SANDBOX_ENABLE_DATA_MOUNT_OFFSET  0x319A53
 
 // enable fpkg
 #define enable_fpkg_patch                           0x3E0602

@@ -179,6 +179,8 @@ PAYLOAD_CODE int shellcore_fpkg_patch(void)
     nidf_libSceDipsw_patch4,
   };
 
+  uint8_t xor__eax_eax__inc__eax[5] = { 0x31, 0xC0, 0xFF, 0xC0, 0x90 };
+
   struct proc *ssc = proc_find_by_name("SceShellCore");
 
   if (!ssc) {
@@ -211,6 +213,11 @@ PAYLOAD_CODE int shellcore_fpkg_patch(void)
     }
   }
 
+  ret = proc_write_mem(ssc, text_seg_base + SHELLCORE_SANDBOX_ENABLE_DATA_MOUNT_OFFSET, sizeof(xor__eax_eax__inc__eax), xor__eax_eax__inc__eax, &n);
+  if (ret) {
+      goto error;
+    }
+
   // enable fpkg for patches
   ret = proc_write_mem(ssc, (void *)(text_seg_base + enable_fpkg_patch), 8, "\xE9\x96\x00\x00\x00\x90\x90\x90", &n);
   if (ret) {
@@ -236,3 +243,4 @@ error:
 
   return ret;
 }
+

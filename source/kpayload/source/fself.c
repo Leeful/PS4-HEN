@@ -15,6 +15,8 @@
 extern void* (*malloc)(unsigned long size, void* type, int flags) PAYLOAD_BSS;
 extern void (*free)(void* addr, void* type) PAYLOAD_BSS;
 extern void* (*memcpy)(void* dst, const void* src, size_t len) PAYLOAD_BSS;
+extern size_t (*strlen)(const char *str) PAYLOAD_BSS;
+extern char * (*strstr) (const char *haystack, const char *needle) PAYLOAD_BSS;
 
 extern void* M_TEMP PAYLOAD_BSS;
 extern struct sbl_map_list_entry** sbl_driver_mapped_pages PAYLOAD_BSS;
@@ -25,6 +27,7 @@ extern int (*sceSblAuthMgrGetSelfInfo)(struct self_context* ctx, struct self_ex_
 extern void (*sceSblAuthMgrSmStart)(void**) PAYLOAD_BSS;
 extern int (*sceSblAuthMgrIsLoadable2)(struct self_context* ctx, struct self_auth_info* old_auth_info, int path_id, struct self_auth_info* new_auth_info) PAYLOAD_BSS;
 extern int (*sceSblAuthMgrVerifyHeader)(struct self_context* ctx) PAYLOAD_BSS;
+extern int (*sceSblACMgrGetPathId) (const char* path) PAYLOAD_BSS;
 
 static const uint8_t s_auth_info_for_exec[] PAYLOAD_RDATA =
 {
@@ -377,6 +380,22 @@ PAYLOAD_CODE int my_sceSblAuthMgrSmLoadSelfBlock__sceSblServiceMailbox(unsigned 
   return result;
 }
 
+PAYLOAD_CODE int my_sceSblAuthMgrIsLoadable__sceSblACMgrGetPathId(const char* path) {
+	static const char* self_dir_prefix = "/data/self/";
+	const char* p;
+	int ret;
+
+	if (path) {
+		p = strstr(path, self_dir_prefix);
+		if (p)
+			path = p + strlen(self_dir_prefix);
+	}
+
+	ret = sceSblACMgrGetPathId(path);
+
+	return ret;
+}
+
 PAYLOAD_CODE void install_fself_hooks()
 {
   uint64_t flags, cr0;
@@ -391,7 +410,9 @@ PAYLOAD_CODE void install_fself_hooks()
   KCALL_REL32(kernbase, sceSblAuthMgrVerifyHeader_hook2, (uint64_t)my_sceSblAuthMgrVerifyHeader);
   KCALL_REL32(kernbase, sceSblAuthMgrSmLoadSelfSegment__sceSblServiceMailbox_hook, (uint64_t)my_sceSblAuthMgrSmLoadSelfSegment__sceSblServiceMailbox);
   KCALL_REL32(kernbase, sceSblAuthMgrSmLoadSelfBlock__sceSblServiceMailbox_hook, (uint64_t)my_sceSblAuthMgrSmLoadSelfBlock__sceSblServiceMailbox);
+  KCALL_REL32(kernbase, sceSblAuthMgrIsLoadable__sceSblACMgrGetPathId__hook, (uint64_t)my_sceSblAuthMgrIsLoadable__sceSblACMgrGetPathId);
 
   intr_restore(flags);
   writeCr0(cr0);
 }
+

@@ -8,9 +8,14 @@ Homebrew Enabler (HEN) for PS4 Firmware v5.05
 - Sandbox Escape
 - Debug Settings
 - External HDD Support
+- Remote Package Install
 
 
 ## Changelog
+v1.8 - By zecoxao.
+- Added Remote PKG Installer Support.
+
+
 v1.7 - By xVortex.
 - Added External HDD Support.
 

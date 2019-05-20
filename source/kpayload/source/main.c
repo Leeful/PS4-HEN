@@ -14,6 +14,7 @@
 #include "amd_helper.h"
 
 size_t (*strlen)(const char *str) PAYLOAD_BSS;
+char * (*strstr) (const char *haystack, const char *needle) PAYLOAD_BSS;
 void* (*malloc)(unsigned long size, void* type, int flags) PAYLOAD_BSS;
 void (*free)(void* addr, void* type) PAYLOAD_BSS;
 void* (*memcpy)(void* dst, const void* src, size_t len) PAYLOAD_BSS;
@@ -37,11 +38,13 @@ int (*sceSblServiceMailbox)(unsigned long service_id, uint8_t request[SBL_MSG_SE
 int (*sceSblAuthMgrGetSelfInfo)(struct self_context* ctx, struct self_ex_info** info) PAYLOAD_BSS;
 int (*sceSblAuthMgrIsLoadable2)(struct self_context* ctx, struct self_auth_info* old_auth_info, int path_id, struct self_auth_info* new_auth_info) PAYLOAD_BSS;
 int (*sceSblAuthMgrVerifyHeader)(struct self_context* ctx) PAYLOAD_BSS;
+int (*sceSblACMgrGetPathId) (const char* path) PAYLOAD_BSS;
 
 extern int my_sceSblAuthMgrIsLoadable2(struct self_context* ctx, struct self_auth_info* old_auth_info, int path_id, struct self_auth_info* new_auth_info) PAYLOAD_CODE;
 extern int my_sceSblAuthMgrVerifyHeader(struct self_context* ctx) PAYLOAD_CODE;
 extern int my_sceSblAuthMgrSmLoadSelfSegment__sceSblServiceMailbox(unsigned long service_id, uint8_t* request, void* response) PAYLOAD_CODE;
 extern int my_sceSblAuthMgrSmLoadSelfBlock__sceSblServiceMailbox(unsigned long service_id, uint8_t* request, void* response) PAYLOAD_CODE;
+extern int my_sceSblAuthMgrIsLoadable__sceSblACMgrGetPathId(const char* path) PAYLOAD_CODE;
 
 // Fpkg
 int (*sceSblPfsKeymgrGenKeys)(union pfs_key_blob* key_blob) PAYLOAD_BSS;
@@ -89,6 +92,7 @@ PAYLOAD_CODE void resolve_kdlsym()
 
   // common
   resolve(strlen);
+  resolve(strstr);
   resolve(malloc);
   resolve(free);
   resolve(memcpy);
@@ -105,6 +109,7 @@ PAYLOAD_CODE void resolve_kdlsym()
   resolve(sceSblAuthMgrGetSelfInfo);
   resolve(sceSblAuthMgrIsLoadable2);
   resolve(sceSblAuthMgrVerifyHeader);
+  resolve(sceSblACMgrGetPathId);
 
   // Fpkg
   resolve(sceSblPfsKeymgrGenKeys);
@@ -150,3 +155,4 @@ int _start()
 {
   return 0;
 }
+
