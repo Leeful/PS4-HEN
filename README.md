@@ -10,6 +10,10 @@ Homebrew Enabler (HEN) for PS4 Firmware v5.05
 
 
 ## Changelog
+v1.6 - By xVortex.
+- Various Bugfixes.
+
+
 v1.5 - By xVortex.
 - First release for Firmware 5.05.
 

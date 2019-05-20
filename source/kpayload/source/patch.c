@@ -13,6 +13,7 @@ extern void (*vm_map_lock_read)(struct vm_map *map) PAYLOAD_BSS;
 extern void (*vm_map_unlock_read)(struct vm_map *map) PAYLOAD_BSS;
 extern int (*vm_map_lookup_entry)(struct vm_map *map, uint64_t address, struct vm_map_entry **entries) PAYLOAD_BSS;
 
+extern size_t (*strlen)(const char *str) PAYLOAD_BSS;
 extern void* (*malloc)(unsigned long size, void* type, int flags) PAYLOAD_BSS;
 extern void (*free)(void* addr, void* type) PAYLOAD_BSS;
 extern void* (*memcpy)(void* dst, const void* src, size_t len) PAYLOAD_BSS;
@@ -32,14 +33,18 @@ PAYLOAD_CODE static inline void dealloc(void* addr)
   free(addr, M_TEMP);
 }
 
-PAYLOAD_CODE static struct proc *proc_find_by_pid(int pid)
+PAYLOAD_CODE static struct proc *proc_find_by_name(const char *name)
 {
   struct proc *p;
+
+  if (!name) {
+    return NULL;
+  }
 
   p = *allproc;
 
   do {
-    if (p->pid == pid) {
+    if (!memcmp(p->p_comm, name, strlen(name))) {
       return p;
     }
   } while ((p = p->p_forw));
@@ -54,7 +59,7 @@ PAYLOAD_CODE static int proc_get_vm_map(struct proc *p, struct proc_vm_map_entry
 
   struct vmspace *vm = vmspace_acquire_ref(p);
   if (!vm) {
-    return 1;
+    return -1;
   }
 
   struct vm_map *map = &vm->vm_map;
@@ -70,14 +75,14 @@ PAYLOAD_CODE static int proc_get_vm_map(struct proc *p, struct proc_vm_map_entry
   if (vm_map_lookup_entry(map, 0, &entry)) {
     vm_map_unlock_read(map);
     vmspace_free(vm);
-    return 1;
+    return -1;
   }
 
   info = (struct proc_vm_map_entry *)alloc(num * sizeof(struct proc_vm_map_entry));
   if (!info) {
     vm_map_unlock_read(map);
     vmspace_free(vm);
-    return 1;
+    return -1;
   }
 
   for (int i = 0; i < num; i++) {
@@ -114,7 +119,7 @@ PAYLOAD_CODE static int proc_rw_mem(struct proc *p, void *ptr, size_t size, void
   int r = 0;
 
   if (!p) {
-    return 1;
+    return -1;
   }
 
   if (size == 0) {
@@ -174,10 +179,10 @@ PAYLOAD_CODE int shellcore_fpkg_patch(void)
     nidf_libSceDipsw_patch4,
   };
 
-  struct proc *ssc = proc_find_by_pid(41); // 5.05
+  struct proc *ssc = proc_find_by_name("SceShellCore");
 
   if (!ssc) {
-    ret = 1;
+    ret = -1;
     goto error;
   }
 
@@ -194,7 +199,7 @@ PAYLOAD_CODE int shellcore_fpkg_patch(void)
   }
 
   if (!text_seg_base) {
-    ret = 1;
+    ret = -1;
     goto error;
   }
 

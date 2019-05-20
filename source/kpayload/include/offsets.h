@@ -2,7 +2,7 @@
 #define __OFFSETS_H
 
 // 5.05
-#define	KERN_XFAST_SYSCALL		0x1C0
+#define	KERN_XFAST_SYSCALL              0x1C0
 
 // data
 #define M_TEMP_addr                     0x14B4110
@@ -13,6 +13,7 @@
 #define allproc_addr                    0x2382FF8
 
 // common
+#define strlen_addr                     0x3B71A0
 #define malloc_addr                     0x10E250
 #define free_addr                       0x10E460
 #define memcpy_addr                     0x1EA530
@@ -67,21 +68,21 @@
 // SceShellCore patches
 
 // call sceKernelIsGenuineCEX
-#define sceKernelIsGenuineCEX_patch1    0x16D05B 
-#define sceKernelIsGenuineCEX_patch2    0x79980B
-#define sceKernelIsGenuineCEX_patch3    0x7E5A13
-#define sceKernelIsGenuineCEX_patch4    0x94715B
+#define sceKernelIsGenuineCEX_patch1                0x16D05B
+#define sceKernelIsGenuineCEX_patch2                0x79980B
+#define sceKernelIsGenuineCEX_patch3                0x7E5A13
+#define sceKernelIsGenuineCEX_patch4                0x94715B
 
 // call nidf_libSceDipsw
-#define nidf_libSceDipsw_patch1         0x16D087
-#define nidf_libSceDipsw_patch2         0x23747B
-#define nidf_libSceDipsw_patch3         0x799837
-#define nidf_libSceDipsw_patch4         0x947187
+#define nidf_libSceDipsw_patch1                     0x16D087
+#define nidf_libSceDipsw_patch2                     0x23747B
+#define nidf_libSceDipsw_patch3                     0x799837
+#define nidf_libSceDipsw_patch4                     0x947187
 
 // enable fpkg
-#define enable_fpkg_patch               0x3E0602
+#define enable_fpkg_patch                           0x3E0602
  
 // debug pkg free string
-#define fake_free_patch                 0xEA96A7
+#define fake_free_patch                             0xEA96A7
 
 #endif

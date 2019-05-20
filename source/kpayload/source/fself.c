@@ -384,9 +384,8 @@ PAYLOAD_CODE void install_fself_hooks()
 
   cr0 = readCr0();
   writeCr0(cr0 & ~X86_CR0_WP);
-
   flags = intr_disable();
- 
+
   KCALL_REL32(kernbase, sceSblAuthMgrIsLoadable2_hook, (uint64_t)my_sceSblAuthMgrIsLoadable2);
   KCALL_REL32(kernbase, sceSblAuthMgrVerifyHeader_hook1, (uint64_t)my_sceSblAuthMgrVerifyHeader);
   KCALL_REL32(kernbase, sceSblAuthMgrVerifyHeader_hook2, (uint64_t)my_sceSblAuthMgrVerifyHeader);

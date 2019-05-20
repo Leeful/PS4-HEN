@@ -416,9 +416,8 @@ PAYLOAD_CODE void install_fpkg_hooks()
 
   cr0 = readCr0();
   writeCr0(cr0 & ~X86_CR0_WP);
-
   flags = intr_disable();
- 
+
   KCALL_REL32(kernbase, sceSblKeymgrSmCallfunc_npdrm_decrypt_isolated_rif_hook, (uint64_t)my_sceSblKeymgrSmCallfunc_npdrm_decrypt_isolated_rif);
   KCALL_REL32(kernbase, sceSblKeymgrSmCallfunc_npdrm_decrypt_rif_new_hook, (uint64_t)my_sceSblKeymgrSmCallfunc_npdrm_decrypt_rif_new);
   KCALL_REL32(kernbase, sceSblKeymgrSetKeyStorage__sceSblDriverSendMsg_hook, (uint64_t)my_sceSblKeymgrSetKeyStorage__sceSblDriverSendMsg);

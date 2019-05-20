@@ -13,6 +13,7 @@
 #include "ccp_helper.h"
 #include "amd_helper.h"
 
+size_t (*strlen)(const char *str) PAYLOAD_BSS;
 void* (*malloc)(unsigned long size, void* type, int flags) PAYLOAD_BSS;
 void (*free)(void* addr, void* type) PAYLOAD_BSS;
 void* (*memcpy)(void* dst, const void* src, size_t len) PAYLOAD_BSS;
@@ -87,6 +88,7 @@ PAYLOAD_CODE void resolve_kdlsym()
   resolve(allproc);
 
   // common
+  resolve(strlen);
   resolve(malloc);
   resolve(free);
   resolve(memcpy);
