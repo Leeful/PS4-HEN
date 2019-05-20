@@ -11,9 +11,10 @@
 #include "ccp_helper.h"
 #include "amd_helper.h"
 
+extern int (*printf)(const char *fmt, ...) PAYLOAD_BSS;
 extern void* (*memcpy)(void* dst, const void* src, size_t len) PAYLOAD_BSS;
 extern void* (*memset)(void *s, int c, size_t n) PAYLOAD_BSS;
-extern int (*sx_xlock)(struct sx *sx, int opts) PAYLOAD_BSS;
+extern int (*sx_xlock)(struct sx *sx, int opts, const char *file, int line) PAYLOAD_BSS;
 extern int (*sx_xunlock)(struct sx *sx) PAYLOAD_BSS;
 extern int (*fpu_kern_enter)(struct thread *td, struct fpu_kern_ctx *ctx, uint32_t flags) PAYLOAD_BSS;
 extern int (*fpu_kern_leave)(struct thread *td, struct fpu_kern_ctx *ctx) PAYLOAD_BSS;
@@ -21,11 +22,16 @@ extern int (*fpu_kern_leave)(struct thread *td, struct fpu_kern_ctx *ctx) PAYLOA
 extern void* fpu_ctx PAYLOAD_BSS;
 extern struct sx* sbl_pfs_sx PAYLOAD_BSS;
 extern struct sbl_map_list_entry** sbl_driver_mapped_pages PAYLOAD_BSS;
+extern struct sbl_key_rbtree_entry** sbl_keymgr_key_rbtree PAYLOAD_BSS;
+extern struct sbl_key_slot_queue* sbl_keymgr_key_slots PAYLOAD_BSS;
+extern uint8_t* sbl_keymgr_buf_va PAYLOAD_BSS;
+extern uint64_t* sbl_keymgr_buf_gva PAYLOAD_BSS;
 
 extern int (*sceSblPfsKeymgrGenKeys)(union pfs_key_blob* key_blob) PAYLOAD_BSS;
 extern int (*sceSblPfsSetKeys)(uint32_t* ekh, uint32_t* skh, uint8_t* eekpfs, struct ekc* eekc, unsigned int pubkey_ver, unsigned int key_ver, struct pfs_header* hdr, size_t hdr_size, unsigned int type, unsigned int finalized, unsigned int is_disc) PAYLOAD_BSS;
 extern int (*sceSblKeymgrClearKey)(uint32_t kh) PAYLOAD_BSS;
 extern int (*sceSblKeymgrSetKeyForPfs)(union sbl_key_desc* key, unsigned int* handle) PAYLOAD_BSS;
+extern int (*sceSblKeymgrSetKeyStorage)(uint64_t key_gpu_va, unsigned int key_size, uint32_t key_id, uint32_t key_handle) PAYLOAD_BSS;
 extern int (*sceSblKeymgrSmCallfunc)(union keymgr_payload* payload) PAYLOAD_BSS;
 extern int (*sceSblDriverSendMsg)(struct sbl_msg* msg, size_t size) PAYLOAD_BSS;
 
@@ -269,7 +275,7 @@ PAYLOAD_CODE int my_mountpfs__sceSblPfsSetKeys(uint32_t* ekh, uint32_t* skh, uin
         goto err;
       }
 
-      sx_xlock(sbl_pfs_sx, 0);
+      sx_xlock(sbl_pfs_sx, 0, 0, 0);
       {
         memset(&enc_key_desc, 0, sizeof(enc_key_desc));
         {
@@ -409,6 +415,72 @@ err:
   return ret;
 }
 
+PAYLOAD_CODE static inline struct sbl_key_rbtree_entry* sceSblKeymgrGetKey(unsigned int handle)
+{
+  struct sbl_key_rbtree_entry* entry = *sbl_keymgr_key_rbtree;
+
+  while (entry)
+  {
+    if (entry->handle < handle)
+      entry = entry->right;
+    else if (entry->handle > handle)
+      entry = entry->left;
+    else if (entry->handle == handle)
+      return entry;
+  }
+
+  return NULL;
+}
+
+PAYLOAD_CODE static int my_sceSblKeymgrInvalidateKey__sx_xlock(struct sx* sx, int opts, const char* file, int line) {
+  printf("[ps4hen] my_sceSblKeymgrInvalidateKey__sx_xlock");
+
+  struct sbl_key_rbtree_entry* key_desc;
+  struct sbl_key_slot_desc* key_slot_desc;
+  unsigned key_handle;
+  int ret, ret2;
+
+  ret = sx_xlock(sx, opts, file, line);
+
+  if (TAILQ_EMPTY(sbl_keymgr_key_slots))
+    goto done;
+
+  TAILQ_FOREACH(key_slot_desc, sbl_keymgr_key_slots, list) {
+    key_handle = key_slot_desc->key_handle;
+    if (key_handle == (unsigned int)-1) {
+      /* unbounded */
+      continue;
+    }
+    key_desc = sceSblKeymgrGetKey(key_handle);
+    if (!key_desc) {
+      /* shouldn't happen in normal situations */
+      continue;
+    }
+    if (!key_desc->occupied) {
+      continue;
+    }
+    if (key_desc->desc.pfs.obf_key_id != PFS_FAKE_OBF_KEY_ID) {
+      /* not our key, just skip, so it will be handled by original code */
+      continue;
+    }
+    if (key_desc->desc.pfs.key_size != sizeof(key_desc->desc.pfs.escrowed_key)) {
+      /* something weird with key params, just ignore and app will just crash... */
+      continue;
+    }
+    memcpy(sbl_keymgr_buf_va, key_desc->desc.pfs.escrowed_key, key_desc->desc.pfs.key_size);
+    ret2 = sceSblKeymgrSetKeyStorage(*sbl_keymgr_buf_gva, key_desc->desc.pfs.key_size, key_desc->desc.pfs.obf_key_id, key_slot_desc->key_id);
+    if (ret2) {
+      /* wtf? */
+      continue;
+    }
+  }
+
+  done:
+  /* XXX: no need to call SX unlock because we'll jump to original code which expects SX is already locked */
+
+  return ret;
+}
+
 PAYLOAD_CODE void install_fpkg_hooks()
 {
   uint64_t flags, cr0;
@@ -421,6 +493,7 @@ PAYLOAD_CODE void install_fpkg_hooks()
   KCALL_REL32(kernbase, sceSblKeymgrSmCallfunc_npdrm_decrypt_isolated_rif_hook, (uint64_t)my_sceSblKeymgrSmCallfunc_npdrm_decrypt_isolated_rif);
   KCALL_REL32(kernbase, sceSblKeymgrSmCallfunc_npdrm_decrypt_rif_new_hook, (uint64_t)my_sceSblKeymgrSmCallfunc_npdrm_decrypt_rif_new);
   KCALL_REL32(kernbase, sceSblKeymgrSetKeyStorage__sceSblDriverSendMsg_hook, (uint64_t)my_sceSblKeymgrSetKeyStorage__sceSblDriverSendMsg);
+  KCALL_REL32(kernbase, sceSblKeymgrInvalidateKey__sx_xlock_hook, (uint64_t)my_sceSblKeymgrInvalidateKey__sx_xlock);
   KCALL_REL32(kernbase, mountpfs__sceSblPfsSetKeys_hook1, (uint64_t)my_mountpfs__sceSblPfsSetKeys);
   KCALL_REL32(kernbase, mountpfs__sceSblPfsSetKeys_hook2, (uint64_t)my_mountpfs__sceSblPfsSetKeys);
 

@@ -10,15 +10,18 @@
 #define mini_syscore_self_binary_addr   0x14C9D48
 #define sbl_driver_mapped_pages_addr    0x271E208
 #define sbl_pfs_sx_addr                 0x271E5D8
+#define sbl_keymgr_key_rbtree_addr      0x2744558
+#define sbl_keymgr_key_slots_addr       0x2744548
+#define sbl_keymgr_buf_va_addr          0x2748000
+#define sbl_keymgr_buf_gva_addr         0x2748800
 #define allproc_addr                    0x2382FF8
-#define M_IOV_addr                      0x14B5E80
-#define console_cdev_addr               0x1AC5158
 
 // common
 #define strlen_addr                     0x3B71A0
 #define strstr_addr                     0x17DFB0
 #define malloc_addr                     0x10E250
 #define free_addr                       0x10E460
+#define printf_addr                     0x436040
 #define memcpy_addr                     0x1EA530
 #define memset_addr                     0x3205C0
 #define memcmp_addr                     0x050AC0
@@ -33,16 +36,14 @@
 #define sceSblAuthMgrGetSelfInfo_addr   0x63CD40
 #define sceSblAuthMgrIsLoadable2_addr   0x63C4F0
 #define sceSblAuthMgrVerifyHeader_addr  0x642B40
-#define sceSblACMgrGetPathId_addr        0x117E0
-#define console_write_addr               0xECAC0
-#define deci_tty_write_addr             0x49CEF0
-#define cloneuio_addr                   0x2A82E0
+#define sceSblACMgrGetPathId_addr       0x0117E0
 
 // Fpkg
 #define sceSblPfsKeymgrGenKeys_addr     0x62D480
 #define sceSblPfsSetKeys_addr           0x61EFA0
 #define sceSblKeymgrClearKey_addr       0x62DB10
 #define sceSblKeymgrSetKeyForPfs_addr   0x62D780
+#define sceSblKeymgrSetKeyStorage_addr  0x623FC0
 #define sceSblKeymgrSmCallfunc_addr     0x62E2A0
 #define sceSblDriverSendMsg_addr        0x61D7F0
 #define RsaesPkcs1v15Dec2048CRT_addr    0x1FD7D0
@@ -70,6 +71,7 @@
 #define sceSblKeymgrSmCallfunc_npdrm_decrypt_isolated_rif_hook    0x64C720
 #define sceSblKeymgrSmCallfunc_npdrm_decrypt_rif_new_hook         0x64D4FF
 #define sceSblKeymgrSetKeyStorage__sceSblDriverSendMsg_hook       0x624065
+#define sceSblKeymgrInvalidateKey__sx_xlock_hook                  0x62E96D
 #define mountpfs__sceSblPfsSetKeys_hook1                          0x6AAAD5
 #define mountpfs__sceSblPfsSetKeys_hook2                          0x6AAD04
 
@@ -80,7 +82,6 @@
 #define sceKernelIsGenuineCEX_patch2                0x79980B
 #define sceKernelIsGenuineCEX_patch3                0x7E5A13
 #define sceKernelIsGenuineCEX_patch4                0x94715B
-#define Patch_sceBgftNotifyGameWillStart_Error      0x3EA9A2
 
 // call nidf_libSceDipsw
 #define nidf_libSceDipsw_patch1                     0x16D087
@@ -88,7 +89,7 @@
 #define nidf_libSceDipsw_patch3                     0x799837
 #define nidf_libSceDipsw_patch4                     0x947187
 
-#define SHELLCORE_SANDBOX_ENABLE_DATA_MOUNT_OFFSET  0x319A53
+#define enable_data_mount_patch                     0x319A53
 
 // enable fpkg
 #define enable_fpkg_patch                           0x3E0602

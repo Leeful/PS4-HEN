@@ -13,6 +13,7 @@
 
 #define	TRACEBUF	struct qm_trace trace;
 
+#define	TAILQ_EMPTY(head) ((head)->tqh_first == NULL)
 #define	TAILQ_FIRST(head) ((head)->tqh_first)
 #define	TAILQ_NEXT(elm, field) ((elm)->field.tqe_next)
 

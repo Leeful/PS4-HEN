@@ -89,7 +89,10 @@ int install_payload(struct thread *td, struct install_payload_args* args)
   // flatz enable debug RIFs 5.05
   *(uint32_t *)(kernel_base + 0x64B2B0) = 0x90C301B0;
   *(uint32_t *)(kernel_base + 0x64B2D0) = 0x90C301B0;
-
+  
+  //enable vr by spoofing 5.05 to 9.00
+  *(uint32_t *)(kernel_base + 0x14A63F1) = 0x9090000;
+  
   // install kpayload
   memset(payload_buffer, 0, PAGE_SIZE);
   memcpy(payload_buffer, payload_data, payload_size);

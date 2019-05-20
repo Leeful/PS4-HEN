@@ -9,10 +9,16 @@ Homebrew Enabler (HEN) for PS4 Firmware v5.05
 - Debug Settings
 - External HDD Support
 - Remote Package Install
-- Added Install PKG From Internal HDD Support (!Breaks certain games!)
+- VR Support
+- Partial Rest Mode Support
 
 
 ## Changelog
+v2.0 - By SiSTRo.
+- Added (Partial) Rest Mode Fix.
+- Added VR Support by spoofing the FW version from 5.05 to v9.00
+
+
 v1.9 - By LightningMods.
 - Added Install PKG From Internal HDD Support
 - !Beware! - Does not work with certain games - !Use with caution!

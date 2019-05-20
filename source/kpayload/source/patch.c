@@ -213,19 +213,13 @@ PAYLOAD_CODE int shellcore_fpkg_patch(void)
     }
   }
 
-  ret = proc_write_mem(ssc, text_seg_base + SHELLCORE_SANDBOX_ENABLE_DATA_MOUNT_OFFSET, sizeof(xor__eax_eax__inc__eax), xor__eax_eax__inc__eax, &n);
+  ret = proc_write_mem(ssc, text_seg_base + enable_data_mount_patch, sizeof(xor__eax_eax__inc__eax), xor__eax_eax__inc__eax, &n);
   if (ret) {
       goto error;
     }
 
   // enable fpkg for patches
   ret = proc_write_mem(ssc, (void *)(text_seg_base + enable_fpkg_patch), 8, "\xE9\x96\x00\x00\x00\x90\x90\x90", &n);
-  if (ret) {
-    goto error;
-  }
-
-ret = proc_write_mem(ssc, (void *)(text_seg_base + Patch_sceBgftNotifyGameWillStart_Error), 5, "\x31\xC0\x90\x90\x90", &n);
-
   if (ret) {
     goto error;
   }

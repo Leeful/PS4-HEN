@@ -17,10 +17,11 @@ size_t (*strlen)(const char *str) PAYLOAD_BSS;
 char * (*strstr) (const char *haystack, const char *needle) PAYLOAD_BSS;
 void* (*malloc)(unsigned long size, void* type, int flags) PAYLOAD_BSS;
 void (*free)(void* addr, void* type) PAYLOAD_BSS;
+int (*printf)(const char *fmt, ...) PAYLOAD_BSS;
 void* (*memcpy)(void* dst, const void* src, size_t len) PAYLOAD_BSS;
 void* (*memset)(void *s, int c, size_t n) PAYLOAD_BSS;
 int (*memcmp)(const void *ptr1, const void *ptr2, size_t num) PAYLOAD_BSS;
-int (*sx_xlock)(struct sx *sx, int opts) PAYLOAD_BSS;
+int (*sx_xlock)(struct sx *sx, int opts, const char *file, int line) PAYLOAD_BSS;
 int (*sx_xunlock)(struct sx *sx) PAYLOAD_BSS;
 int (*fpu_kern_enter)(struct thread *td, struct fpu_kern_ctx *ctx, uint32_t flags) PAYLOAD_BSS;
 int (*fpu_kern_leave)(struct thread *td, struct fpu_kern_ctx *ctx) PAYLOAD_BSS;
@@ -31,8 +32,10 @@ uint8_t* mini_syscore_self_binary PAYLOAD_BSS;
 struct sbl_map_list_entry** sbl_driver_mapped_pages PAYLOAD_BSS;
 struct sx* sbl_pfs_sx PAYLOAD_BSS;
 struct proc** allproc PAYLOAD_BSS;
-struct malloc_type* M_IOV PAYLOAD_BSS;
-struct cdev** console_cdev PAYLOAD_BSS;
+struct sbl_key_rbtree_entry** sbl_keymgr_key_rbtree PAYLOAD_BSS;
+struct sbl_key_slot_queue* sbl_keymgr_key_slots PAYLOAD_BSS;
+uint8_t* sbl_keymgr_buf_va PAYLOAD_BSS;
+uint64_t* sbl_keymgr_buf_gva PAYLOAD_BSS;
 
 // Fself
 void (*sceSblAuthMgrSmStart)(void**) PAYLOAD_BSS;
@@ -41,9 +44,6 @@ int (*sceSblAuthMgrGetSelfInfo)(struct self_context* ctx, struct self_ex_info** 
 int (*sceSblAuthMgrIsLoadable2)(struct self_context* ctx, struct self_auth_info* old_auth_info, int path_id, struct self_auth_info* new_auth_info) PAYLOAD_BSS;
 int (*sceSblAuthMgrVerifyHeader)(struct self_context* ctx) PAYLOAD_BSS;
 int (*sceSblACMgrGetPathId) (const char* path) PAYLOAD_BSS;
-int (*console_write) (struct cdev* dev, struct uio* uio, int ioflag) PAYLOAD_BSS;
-int (*deci_tty_write) (struct cdev* dev, struct uio* uio, int ioflag) PAYLOAD_BSS;
-struct uio* (*cloneuio) (struct uio* uiop) PAYLOAD_BSS;
 
 extern int my_sceSblAuthMgrIsLoadable2(struct self_context* ctx, struct self_auth_info* old_auth_info, int path_id, struct self_auth_info* new_auth_info) PAYLOAD_CODE;
 extern int my_sceSblAuthMgrVerifyHeader(struct self_context* ctx) PAYLOAD_CODE;
@@ -56,6 +56,7 @@ int (*sceSblPfsKeymgrGenKeys)(union pfs_key_blob* key_blob) PAYLOAD_BSS;
 int (*sceSblPfsSetKeys)(uint32_t* ekh, uint32_t* skh, uint8_t* eekpfs, struct ekc* eekc, unsigned int pubkey_ver, unsigned int key_ver, struct pfs_header* hdr, size_t hdr_size, unsigned int type, unsigned int finalized, unsigned int is_disc) PAYLOAD_BSS;
 int (*sceSblKeymgrClearKey)(uint32_t kh) PAYLOAD_BSS;
 int (*sceSblKeymgrSetKeyForPfs)(union sbl_key_desc* key, unsigned int* handle) PAYLOAD_BSS;
+int (*sceSblKeymgrSetKeyStorage)(uint64_t key_gpu_va, unsigned int key_size, uint32_t key_id, uint32_t key_handle) PAYLOAD_BSS;
 int (*sceSblKeymgrSmCallfunc)(union keymgr_payload* payload) PAYLOAD_BSS;
 int (*sceSblDriverSendMsg)(struct sbl_msg* msg, size_t size) PAYLOAD_BSS;
 int (*RsaesPkcs1v15Dec2048CRT)(struct rsa_buffer* out, struct rsa_buffer* in, struct rsa_key* key) PAYLOAD_BSS;
@@ -94,14 +95,17 @@ PAYLOAD_CODE void resolve_kdlsym()
   resolve(sbl_driver_mapped_pages);
   resolve(sbl_pfs_sx);
   resolve(allproc);
-  resolve(M_IOV);
-  resolve(console_cdev);
+  resolve(sbl_keymgr_key_rbtree);
+  resolve(sbl_keymgr_key_slots);
+  resolve(sbl_keymgr_buf_va);
+  resolve(sbl_keymgr_buf_gva);
 
   // common
   resolve(strlen);
   resolve(strstr);
   resolve(malloc);
   resolve(free);
+  resolve(printf);
   resolve(memcpy);
   resolve(memset);
   resolve(memcmp);
@@ -117,15 +121,13 @@ PAYLOAD_CODE void resolve_kdlsym()
   resolve(sceSblAuthMgrIsLoadable2);
   resolve(sceSblAuthMgrVerifyHeader);
   resolve(sceSblACMgrGetPathId);
-  resolve(console_write);
-  resolve(deci_tty_write);
-  resolve(cloneuio);
 
   // Fpkg
   resolve(sceSblPfsKeymgrGenKeys);
   resolve(sceSblPfsSetKeys);
   resolve(sceSblKeymgrClearKey);
   resolve(sceSblKeymgrSetKeyForPfs);
+  resolve(sceSblKeymgrSetKeyStorage);
   resolve(sceSblKeymgrSmCallfunc);
   resolve(sceSblDriverSendMsg);
   resolve(RsaesPkcs1v15Dec2048CRT);
