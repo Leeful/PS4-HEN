@@ -7,9 +7,14 @@ Homebrew Enabler (HEN) for PS4 Firmware v5.05
 - Jailbreak
 - Sandbox Escape
 - Debug Settings
+- External HDD Support
 
 
 ## Changelog
+v1.7 - By xVortex.
+- Added External HDD Support.
+
+
 v1.6 - By xVortex.
 - Various Bugfixes.
 

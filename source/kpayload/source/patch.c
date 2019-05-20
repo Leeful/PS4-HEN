@@ -223,6 +223,12 @@ PAYLOAD_CODE int shellcore_fpkg_patch(void)
     goto error;
   }
 
+  // make pkgs installer working with external hdd
+  ret = proc_write_mem(ssc, (void *)(text_seg_base + pkg_installer_patch), 1, "\0", &n);
+  if (ret) {
+    goto error;
+  }
+
 error:
   if (entries) {
     dealloc(entries);
