@@ -9,9 +9,15 @@ Homebrew Enabler (HEN) for PS4 Firmware v5.05
 - Debug Settings
 - External HDD Support
 - Remote Package Install
+- Added Install PKG From Internal HDD Support (!Breaks certain games!)
 
 
 ## Changelog
+v1.9 - By LightningMods.
+- Added Install PKG From Internal HDD Support
+- !Beware! - Does not work with certain games - !Use with caution!
+
+
 v1.8 - By zecoxao.
 - Added Remote PKG Installer Support.
 

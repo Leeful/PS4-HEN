@@ -11,6 +11,8 @@
 #define sbl_driver_mapped_pages_addr    0x271E208
 #define sbl_pfs_sx_addr                 0x271E5D8
 #define allproc_addr                    0x2382FF8
+#define M_IOV_addr                      0x14B5E80
+#define console_cdev_addr               0x1AC5158
 
 // common
 #define strlen_addr                     0x3B71A0
@@ -32,6 +34,9 @@
 #define sceSblAuthMgrIsLoadable2_addr   0x63C4F0
 #define sceSblAuthMgrVerifyHeader_addr  0x642B40
 #define sceSblACMgrGetPathId_addr        0x117E0
+#define console_write_addr               0xECAC0
+#define deci_tty_write_addr             0x49CEF0
+#define cloneuio_addr                   0x2A82E0
 
 // Fpkg
 #define sceSblPfsKeymgrGenKeys_addr     0x62D480
@@ -75,6 +80,7 @@
 #define sceKernelIsGenuineCEX_patch2                0x79980B
 #define sceKernelIsGenuineCEX_patch3                0x7E5A13
 #define sceKernelIsGenuineCEX_patch4                0x94715B
+#define Patch_sceBgftNotifyGameWillStart_Error      0x3EA9A2
 
 // call nidf_libSceDipsw
 #define nidf_libSceDipsw_patch1                     0x16D087

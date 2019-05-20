@@ -31,6 +31,8 @@ uint8_t* mini_syscore_self_binary PAYLOAD_BSS;
 struct sbl_map_list_entry** sbl_driver_mapped_pages PAYLOAD_BSS;
 struct sx* sbl_pfs_sx PAYLOAD_BSS;
 struct proc** allproc PAYLOAD_BSS;
+struct malloc_type* M_IOV PAYLOAD_BSS;
+struct cdev** console_cdev PAYLOAD_BSS;
 
 // Fself
 void (*sceSblAuthMgrSmStart)(void**) PAYLOAD_BSS;
@@ -39,6 +41,9 @@ int (*sceSblAuthMgrGetSelfInfo)(struct self_context* ctx, struct self_ex_info** 
 int (*sceSblAuthMgrIsLoadable2)(struct self_context* ctx, struct self_auth_info* old_auth_info, int path_id, struct self_auth_info* new_auth_info) PAYLOAD_BSS;
 int (*sceSblAuthMgrVerifyHeader)(struct self_context* ctx) PAYLOAD_BSS;
 int (*sceSblACMgrGetPathId) (const char* path) PAYLOAD_BSS;
+int (*console_write) (struct cdev* dev, struct uio* uio, int ioflag) PAYLOAD_BSS;
+int (*deci_tty_write) (struct cdev* dev, struct uio* uio, int ioflag) PAYLOAD_BSS;
+struct uio* (*cloneuio) (struct uio* uiop) PAYLOAD_BSS;
 
 extern int my_sceSblAuthMgrIsLoadable2(struct self_context* ctx, struct self_auth_info* old_auth_info, int path_id, struct self_auth_info* new_auth_info) PAYLOAD_CODE;
 extern int my_sceSblAuthMgrVerifyHeader(struct self_context* ctx) PAYLOAD_CODE;
@@ -89,6 +94,8 @@ PAYLOAD_CODE void resolve_kdlsym()
   resolve(sbl_driver_mapped_pages);
   resolve(sbl_pfs_sx);
   resolve(allproc);
+  resolve(M_IOV);
+  resolve(console_cdev);
 
   // common
   resolve(strlen);
@@ -110,6 +117,9 @@ PAYLOAD_CODE void resolve_kdlsym()
   resolve(sceSblAuthMgrIsLoadable2);
   resolve(sceSblAuthMgrVerifyHeader);
   resolve(sceSblACMgrGetPathId);
+  resolve(console_write);
+  resolve(deci_tty_write);
+  resolve(cloneuio);
 
   // Fpkg
   resolve(sceSblPfsKeymgrGenKeys);
@@ -155,4 +165,3 @@ int _start()
 {
   return 0;
 }
-

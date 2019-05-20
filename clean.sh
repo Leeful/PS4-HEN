@@ -12,4 +12,4 @@ pushd source/installer
 make clean
 popd
 
-rm -f PS4-HEN-v1.8.bin PS4-HEN-v1.8.html source/payload.js
+rm -f PS4-HEN-v1.9.bin PS4-HEN-v1.9.html source/payload.js

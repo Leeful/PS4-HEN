@@ -224,6 +224,12 @@ PAYLOAD_CODE int shellcore_fpkg_patch(void)
     goto error;
   }
 
+ret = proc_write_mem(ssc, (void *)(text_seg_base + Patch_sceBgftNotifyGameWillStart_Error), 5, "\x31\xC0\x90\x90\x90", &n);
+
+  if (ret) {
+    goto error;
+  }
+
   // this offset corresponds to "fake\0" string in the Shellcore's memory
   ret = proc_write_mem(ssc, (void *)(text_seg_base + fake_free_patch), 5, "free\0", &n);
   if (ret) {
@@ -243,4 +249,3 @@ error:
 
   return ret;
 }
-
